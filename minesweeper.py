@@ -40,19 +40,21 @@ class Game:
 
         print(field_assignment)
 
-    def unfold(self, i, j):
+    def unfold(self, i, j, checkAvailableMoves=True):
         assert i < self.game_size and j < self.game_size
 
         if self.field[i][j]:
             return True #field already unfolded
 
-        if not self.move_available():
+        if checkAvailableMoves and not self.move_available():
             pass
             return 
 
 
         if self.field_assignment[i][j] == math.inf:
             return False #you lost the game / selected a mine
+
+        self.field[i][j] = 1
 
         if self.field_assignment[i][j] == 0:
             #unfold all zero-fields connected to this one
@@ -67,8 +69,17 @@ class Game:
 
     def unfold_neighbors(self, i, j):
         #unfold all neigbors that are zeros and habe a number
+
+        left = max(0, i-1)
+        right = max(0, i+2)
+        bottom = max(0, j-1)
+        top = max(0, j+2)
         
-        pass
+        #unfold all connected neighbors of a 0-field
+        for o in range(left, right):
+            for p in range(bottom, top):
+                if (o != i or p != j) and not self.field[o][p]:
+                    self.unfold(o, p, False) #ignore check for available random fields
 
     #TODO
     def move_available(self):
@@ -78,3 +89,9 @@ class Game:
         return True
 
 g = Game(9, 10)
+x = int(input())
+y = int(input())
+
+g.unfold(x,y)
+print(g.field)
+print(g.field_assignment)
