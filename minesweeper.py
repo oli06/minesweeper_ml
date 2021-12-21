@@ -4,7 +4,7 @@ import numpy as np
 import random as rand
 import math
 
-class Game:
+class Minesweeper:
     def __init__(self, game_size, mines):
         self.game_size = game_size
         self.mines = mines
@@ -17,7 +17,7 @@ class Game:
         #init game data
 
         #generate mines locations and update neighbors
-        field_assignment = np.zeros((self.game_size, self.game_size))
+        field_assignment = np.zeros((self.game_size, self.game_size), dtype=np.float)
         mines_count = 0
         while mines_count < self.mines:
             next_i = rand.randint(0, self.game_size-1)
@@ -36,7 +36,7 @@ class Game:
                 field_assignment[left:right,bottom:top] += 1 #update all neighbors (including the field itself), since mines are stored as math.inf there is no impact on such fields
 
         self.field_assignment = field_assignment
-        self.field = np.zeros((self.game_size, self.game_size))
+        self.field = np.zeros((self.game_size, self.game_size), dtype=np.bool_)
 
         print(field_assignment)
 
@@ -47,8 +47,7 @@ class Game:
             return True #field already unfolded
 
         if checkAvailableMoves and not self.move_available():
-            pass
-            return 
+            return True
 
 
         if self.field_assignment[i][j] == math.inf:
@@ -70,16 +69,16 @@ class Game:
     def unfold_neighbors(self, i, j):
         #unfold all neigbors that are zeros and habe a number
 
-        left = max(0, i-1)
-        right = max(0, i+2)
-        bottom = max(0, j-1)
-        top = max(0, j+2)
+        left = max(0, j-1)
+        right = min(j + 1, self.game_size-1)
+        top = max(0, i-1)
+        bottom = min(i+1, self.game_size-1)
         
         #unfold all connected neighbors of a 0-field
-        for o in range(left, right):
-            for p in range(bottom, top):
-                if (o != i or p != j) and not self.field[o][p]:
-                    self.unfold(o, p, False) #ignore check for available random fields
+        for o in range(left, right+1):
+            for p in range(top, bottom+1):
+                if (o != j or p != i) and not self.field[p, o]:
+                    self.unfold(p, o, False) #ignore check for available random fields
 
     #TODO
     def move_available(self):
@@ -87,11 +86,3 @@ class Game:
         #return false, if a random guess is required
 
         return True
-
-g = Game(9, 10)
-x = int(input())
-y = int(input())
-
-g.unfold(x,y)
-print(g.field)
-print(g.field_assignment)
