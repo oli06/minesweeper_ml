@@ -3,14 +3,12 @@
 from tkinter import *
 import numpy as np
 import math
-
-from numpy.ma.core import mask_rowcols
 import minesweeper as ms
+
 number_of_mines = 10
 number_of_rows = 9
 
-size_of_board = 600
-symbol_size = (size_of_board / number_of_rows - size_of_board / 8) / 2
+size_of_board = 603
 
 class MinesweeperUI():
     def __init__(self):
@@ -32,10 +30,10 @@ class MinesweeperUI():
 
     def initialize_board(self):
         for i in range(number_of_rows):
-            self.canvas.create_line((i + 1) * size_of_board / number_of_rows, 0, (i + 1) * size_of_board / number_of_rows, size_of_board)
+            self.canvas.create_line((i+1) * size_of_board / number_of_rows, 0, (i + 1) * size_of_board / number_of_rows, size_of_board)
 
-        for i in range(number_of_rows):
-            self.canvas.create_line(0, (i + 1) * size_of_board / number_of_rows, size_of_board, (i + 1) * size_of_board / number_of_rows)
+        for i in range(number_of_rows+1):
+            self.canvas.create_line(0, (i+1) * size_of_board / number_of_rows, size_of_board, (i + 1) * size_of_board / number_of_rows)
 
 
     def draw_active_fields(self, fields):
@@ -91,8 +89,10 @@ class MinesweeperUI():
     def convert_grid_to_logical_position(self, grid_position):
         return math.floor(grid_position[0] / size_of_board * number_of_rows), math.floor(grid_position[1] / size_of_board * number_of_rows)
 
+
     def convert_logical_to_grid_position(self, i,j):
         return (size_of_board / number_of_rows) * i, (size_of_board / number_of_rows) * j
+
 
     def click(self, event):
         grid_position = [event.x, event.y]
@@ -100,7 +100,7 @@ class MinesweeperUI():
             #clicked out of bounds / moved the window
             return
 
-        j,i = self.convert_grid_to_logical_position2(grid_position) #be careful: event.x and event.y axis are "switched"
+        j,i = self.convert_grid_to_logical_position(grid_position) #be careful: event.x and event.y axis are "switched"
         old_field = np.array(self.game.field) #TODO: unsauber programmiert. Bei jedem Click wird das Feld kopiert, um anschliessend veraenderungen festzustellen, um diese dann zu zeichnen
         if self.game.unfold(i,j):
             #redraw ui
@@ -111,12 +111,13 @@ class MinesweeperUI():
             #game is lost
             self.draw_mines()
 
+
     def right_click(self, event):
         grid_position = [event.x, event.y]
         if event.x < 0 or event.y < 0:
             #clicked out of bounds
             return
-        j,i = self.convert_grid_to_logical_position2(grid_position) #be careful: event.x and event.y axis are "switched"
+        j,i = self.convert_grid_to_logical_position(grid_position) #be careful: event.x and event.y axis are "switched"
         if not self.game.field[i,j]:
             #marker or remove marker for this field
             if self.markers[i,j]:
