@@ -102,7 +102,17 @@ class MinesweeperUI():
 
         j,i = self.convert_grid_to_logical_position(grid_position) #be careful: event.x and event.y axis are "switched"
         old_field = np.array(self.game.field) #TODO: unsauber programmiert. Bei jedem Click wird das Feld kopiert, um anschliessend veraenderungen festzustellen, um diese dann zu zeichnen
-        if self.game.unfold(i,j):
+        if not self.game.field.any():
+            #first click
+            while not self.game.unfold(i,j):
+                #if the first click lands on a bomb, we simply regenerate the game as long as we dont generate a mine on i,j
+                self.game = ms.Minesweeper(number_of_rows, number_of_mines)
+
+            #redraw the ui
+            new_fields = np.logical_xor(old_field, self.game.field)
+            print(new_fields)
+            self.draw_active_fields(new_fields)
+        elif self.game.unfold(i,j):
             #redraw ui
             new_fields = np.logical_xor(old_field, self.game.field)
             print(new_fields)
@@ -116,7 +126,7 @@ class MinesweeperUI():
         grid_position = [event.x, event.y]
         if event.x < 0 or event.y < 0:
             #clicked out of bounds
-            return
+            return 
         j,i = self.convert_grid_to_logical_position(grid_position) #be careful: event.x and event.y axis are "switched"
         if not self.game.field[i,j]:
             #marker or remove marker for this field
