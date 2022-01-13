@@ -46,12 +46,16 @@ class Minesweeper:
         if self.field[i][j]:
             return True #field already unfolded
 
-        if checkAvailableMoves and not self.move_available():
-            return True
-
+        
 
         if self.field_assignment[i][j] == math.inf:
-            return False #you lost the game / selected a mine
+            if not self.field.any(): #first click
+                #if the first click lands on a bomb, we simply regenerate the game as long as we dont generate a mine on i,j
+                self.__generate_game()
+                while not self.unfold(i,j):
+                    self.__generate_game()
+            else:
+                return False #you lost the game / selected a mine
 
         self.field[i][j] = 1
 
@@ -79,10 +83,3 @@ class Minesweeper:
             for p in range(top, bottom+1):
                 if (o != j or p != i) and not self.field[p, o]:
                     self.unfold(p, o, False) #ignore check for available random fields
-
-    #TODO
-    def move_available(self):
-        #return true, if there is at least one possible move (based on self.filed/ self.assignment) available by calculation
-        #return false, if a random guess is required
-
-        return True
