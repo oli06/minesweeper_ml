@@ -40,13 +40,11 @@ class Minesweeper:
 
         print(field_assignment)
 
-    def unfold(self, i, j, checkAvailableMoves=True):
+    def unfold(self, i, j):
         assert i < self.game_size and j < self.game_size
 
         if self.field[i][j]:
             return True #field already unfolded
-
-        
 
         if self.field_assignment[i][j] == math.inf:
             if not self.field.any(): #first click
@@ -82,4 +80,4 @@ class Minesweeper:
         for o in range(left, right+1):
             for p in range(top, bottom+1):
                 if (o != j or p != i) and not self.field[p, o]:
-                    self.unfold(p, o, False) #ignore check for available random fields
+                    self.unfold(p, o) #ignore check for available random fields
