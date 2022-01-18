@@ -52,6 +52,8 @@ class Minesweeper:
                 self.__generate_game()
                 while not self.unfold(i,j):
                     self.__generate_game()
+
+                return True
             else:
                 return False #you lost the game / selected a mine
 
@@ -62,6 +64,7 @@ class Minesweeper:
             self.unfold_neighbors(i,j)
 
         self.unfolded += 1
+        print(f"unfolded {i},{j} ist {self.field_assignment[i,j]}")
         return True
 
     def is_game_won(self):
