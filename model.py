@@ -40,7 +40,7 @@ class QTrainer:
         reward = torch.tensor(reward, dtype=torch.float)
         # (n, x)
 
-        if len(state.shape) == (9,9):
+        if len(state.shape) == 2:
             # (1, x)
             state = torch.unsqueeze(state, 0)
             next_state = torch.unsqueeze(next_state, 0)
@@ -57,7 +57,10 @@ class QTrainer:
             if not done[idx]:
                 Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
 
-            target[idx][torch.argmax(move[idx]).item()] = Q_new
+            index = move[0][0] * 9 + move[0][1]
+
+            #target[idx][0][torch.argmax(move[idx]).item()] = Q_new
+            target[idx][0][index.item()] = Q_new
     
         # 2: Q_new = r + y * max(next_predicted Q value) -> only do this if not done
         # pred.clone()
