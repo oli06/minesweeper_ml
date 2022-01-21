@@ -38,7 +38,7 @@ class Minesweeper:
         self.field_assignment = field_assignment
         self.field = np.zeros((self.game_size, self.game_size), dtype=np.bool_)
 
-        print(field_assignment)
+        #print(field_assignment)
 
     def unfold(self, i, j):
         assert i < self.game_size and j < self.game_size
@@ -64,7 +64,7 @@ class Minesweeper:
             self.unfold_neighbors(i,j)
 
         self.unfolded += 1
-        print(f"unfolded {i},{j} ist {self.field_assignment[i,j]}")
+        #print(f"unfolded {i},{j} ist {self.field_assignment[i,j]}")
         return True
 
     def is_game_won(self):
