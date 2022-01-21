@@ -15,16 +15,24 @@ MINE_COUNT = 10
 
 class Agent:
     def __init__(self):
-        self.gamma = 0.9
-        self.epsilon = 0
+        self.gamma = 0.1
+        self.epsilon = 1
         self.number_of_games = 0
         self.memory = deque(maxlen=MAX_MEMORY)
         self.model = Linear_QNet(GAME_SIZE*GAME_SIZE, 256, GAME_SIZE*GAME_SIZE)
         self.trainer = QTrainer(self.model, LEARNING_RATE, self.gamma)
 
+    def __update_epsilon(self):
+        self.epsilon = self.epsilon - 0.03 #after 3000 games we reached our epsilon-minimum
+        if self.epsilon < 0.1: #minimum of 0.1
+            self.epsilon = 0.1
+        
+
     def getAction(self, state, game_size, game_instance: ms.Minesweeper):
-        self.epsilon = 100 - self.number_of_games
-        if random.randint(0, 200) < self.epsilon:
+        if self.number_of_games % 100 == 0:
+            self.__update_epsilon()
+
+        if random.random() < self.epsilon:
             while True:
                 i = random.randint(0, game_size-1)
                 j = random.randint(0, game_size-1)
@@ -71,6 +79,17 @@ class Agent:
         return out.reshape((1,81))
 
 
+def has_neighbour(move, game):
+    #calculating neigbor indices
+    left = max(0, move[0]-1)
+    right = max(0, move[0]+2)
+    bottom = max(0, move[1]-1)
+    top = max(0, move[1]+2)
+
+    if game.field[left:right,bottom:top].any():
+        return True
+    return False
+
 def train():
     high_score = 0
     total_score = 0
@@ -88,15 +107,23 @@ def train():
 
         old_score = game.unfolded
         field_already_unfolded = game.field[move[0], move[1]]
+        has_unfolded_neighbours = has_neighbour(move, game)
+
         isLost = not game.unfold(move[0], move[1])
         score = game.unfolded
-        reward = (score - old_score) #mehr reward bei mehr feldern, die auf einmal aufgedeckt wurden?
+        is_game_won = game.is_game_won()
 
+        reward = 0.7
         if field_already_unfolded:
-            reward = -2 * field_already_unfolded_multiplier 
-            field_already_unfolded_multiplier += 1
+            #reward = -2 * field_already_unfolded_multiplier 
+            #field_already_unfolded_multiplier += 1
+            reward = -0.3
+        elif not has_unfolded_neighbours and old_score == 0:
+            reward = -0.3
         elif isLost:
-            reward = -4
+            reward = -1
+        elif is_game_won:
+            reward = 5
         
         state_new = agent.getState(game)
 
@@ -113,7 +140,11 @@ def train():
                 high_score = score
                 agent.model.save()
 
+
+            total_score += score
             if game.is_game_won():
+
+
                 print(f"+++++++++ WIR HABEN GEWONNEN🔫🔫🔫 +++++++")
                 print(f"+++++++++ WIR HABEN GEWONNEN🔫🔫🔫 +++++++")
 
@@ -126,7 +157,7 @@ def train():
                 print(f"+++++++++ WIR HABEN GEWONNEN🔫🔫🔫 +++++++")
                 print()
 
-            print("Game", agent.number_of_games, "score", score, "highscore", high_score, "number of random moves", random_counter)
+            print("Game", agent.number_of_games, "score", score, "highscore", high_score, "average score", total_score / agent.number_of_games, "random move", random_counter)
             random_counter = 0
             field_already_unfolded_multiplier = 1
             
