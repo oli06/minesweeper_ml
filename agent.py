@@ -1,4 +1,3 @@
-from dqn import create_dqn
 #agent 
 import pickle
 
@@ -7,19 +6,13 @@ import minesweeper as ms
 import numpy as np
 import random
 from model import QTrainer
-import tensorflow as tf
 
 MAX_MEMORY = 25_000
-BATCH_SIZE = 1000
 LEARNING_RATE = 0.001
 AGG_STATS_EVERY = 100 # calculate stats every 100 games for tensorboard
 SAVE_MODEL_EVERY = 1000 # save model and replay every 10,000 episodes
-
 GAME_SIZE = 9
 MINE_COUNT = 10
-
-CONV_UNITS = 64 # number of neurons in each conv layer
-DENSE_UNITS = 512 # number of neurons in fully connected dense layer
 
 class Agent:
     def __init__(self, load_model=False):
@@ -36,21 +29,13 @@ class Agent:
                 j = random.randint(0, game_size-1)
                 if state[i,j, 1]: #regenerate field if already unfolded
                     move = (i,j)
-                    break
-        
-            return move, True
+                    return move, True
 
-        #state0 = tf.convert_to_tensor(state, dtype=np.float32)
-        #prediction = self.model.predict(state0)
         prediction = self.trainer.model.predict(np.reshape(state, (1, game_size, game_size, 2))) #since our model always uses a input of (None, game_size, game_size, 2) where None is a variable batch size (in this prediction case it must be 1), we need to add another dimension, such that (1,9,9,2)
         #therefore prediction is an array (of batch_size), since our batch_size = 1, we need the first prediction
-        #board = state.reshape(1, game_size*game_size) #reshape to (1,81) (for a basic game)
         board = state[:,:,1] #board: unfolded/folded states in (1,game_size*game_size) shape
         prediction[board==0] = np.min(prediction) #set all unfoleded to min-prediction to prevent no_progress
-        #prediction[board[1]==0] = np.min(prediction)
         move = np.argmax(prediction)
-        #argmax_move = tf.math.argmax(prediction[0])
-        #move = np.unravel_index(argmax_move, game_instance.field.shape)
         return move, False
 
     def _getActions(self, game_instance: ms.Minesweeper):
@@ -68,34 +53,6 @@ class Agent:
         result[filter, 0] = game_instance.field_assignment[filter]
         result[game_instance.field == False, 1] = 1
         return result
-        #one-hot representation NxNx10
-        #eight fields, one-hot encoded for the number (1-8)
-        #one field indicating a zero-value field
-        #one field is 1 if folded otherwise 0
-
-        """n_values = 11
-        out = np.eye(n_values)[game_instance.field_assignment[game_instance.field_assignment == math.inf] = 0]
-
-        for i in range(0, game_instance.game_size):
-            for j in range(0, game_instance.game_size):
-                if not game_instance.field[i,j]:
-                    out[i,j][n_values-1] = 1
-                if game_instance.field_assignment[i,j] == 0:
-                    out[i,j][n_values-2] = 1
-        """
-        """out = np.full(game_instance.field_assignment.shape, -1)
-
-        for i in range(0, game_instance.game_size):
-            for j in range(0, game_instance.game_size):
-                if game_instance.field[i,j]:
-                    #out[i,j] = game_instance.field_assignment[i,j]
-                    out[i,j] = 1 #anstatt die tatsaechlichen werte aus dem spiel zu verwenden, setzen wir aufgedeckt=1
-
-        return out.reshape((1,81))
-        """
-        return out
-                
-                
 
 
 def has_neighbour(move, game):
@@ -133,7 +90,6 @@ def train():
     game = ms.Minesweeper(GAME_SIZE, MINE_COUNT)
     progress_list, wins_list, ep_rewards = [], [], []
     random_counter = 0
-    field_already_unfolded_multiplier = 1
     episodes = 100_000
     for episode in tqdm(range(1, episodes+1), unit='episode'):
         game = ms.Minesweeper(GAME_SIZE, MINE_COUNT)
