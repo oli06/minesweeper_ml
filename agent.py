@@ -9,7 +9,7 @@ import random
 from model import QTrainer
 import tensorflow as tf
 
-MAX_MEMORY = 100_000
+MAX_MEMORY = 25_000
 BATCH_SIZE = 1000
 LEARNING_RATE = 0.001
 AGG_STATS_EVERY = 100 # calculate stats every 100 games for tensorboard
@@ -22,13 +22,11 @@ CONV_UNITS = 64 # number of neurons in each conv layer
 DENSE_UNITS = 512 # number of neurons in fully connected dense layer
 
 class Agent:
-    def __init__(self):
+    def __init__(self, load_model=False):
         self.gamma = 0.1
         self.epsilon = 1
         self.number_of_games = 0
-        #self.model = Linear_QNet(GAME_SIZE*GAME_SIZE, 256, GAME_SIZE*GAME_SIZE)
-        #self.model = create_dqn(LEARNING_RATE, (GAME_SIZE,GAME_SIZE,2), GAME_SIZE*GAME_SIZE, CONV_UNITS, DENSE_UNITS)
-        self.trainer = QTrainer(LEARNING_RATE, self.gamma, self.epsilon, MAX_MEMORY)
+        self.trainer = QTrainer(LEARNING_RATE, self.gamma, self.epsilon, MAX_MEMORY, load_model)
 
 
     def getAction(self, state, game_size):
@@ -67,7 +65,7 @@ class Agent:
     def getState(self, game_instance: ms.Minesweeper):
         result = np.zeros((game_instance.game_size, game_instance.game_size, 2))
         filter = ~np.logical_or(game_instance.field == False, game_instance.field_assignment == 0) #Not U or E
-        result[filter, 0] = game_instance.field_assignment[filter] / 4
+        result[filter, 0] = game_instance.field_assignment[filter]
         result[game_instance.field == False, 1] = 1
         return result
         #one-hot representation NxNx10
@@ -130,7 +128,8 @@ def train():
     win_rate = 0
     plot_scores = []
     plot_mean_scores = []
-    agent = Agent()
+    agent = Agent(load_model=True)
+
     game = ms.Minesweeper(GAME_SIZE, MINE_COUNT)
     progress_list, wins_list, ep_rewards = [], [], []
     random_counter = 0
@@ -150,18 +149,14 @@ def train():
             old_score = game.unfolded
             field_already_unfolded = game.field[move[0], move[1]]
             has_unfolded_neighbours = has_neighbour(move, game)
-
             done = game.unfold(move[0], move[1])
             score = game.unfolded
-
             reward = calculate_reward(game, done, field_already_unfolded, old_score, has_unfolded_neighbours)
             episode_reward += reward
 
             state_new = agent.getState(game)
-
             agent.remember(state, state_new, move, reward, done)
             agent.train_short_memory(done)
-
         high_score = max(high_score, score)
         hundred_games_score += score
         ep_rewards.append(episode_reward)
@@ -172,7 +167,7 @@ def train():
 
         if agent.number_of_games % 100 == 0:
             total_score += hundred_games_score
-            print("Games", agent.number_of_games, "ten_last_games_score", hundred_games_score / 100, "highscore", high_score, "average score", total_score / agent.number_of_games, "avg random move", random_counter / 100, "win-rate", win_rate/100)
+            print("Games", agent.number_of_games, "last_hundred_games_score", hundred_games_score / 100, "highscore", high_score, "average score", total_score / agent.number_of_games, "avg random move", random_counter / 100, "win-rate", win_rate/100)
             hundred_games_score = 0
             random_counter = 0
             win_rate = 0
@@ -197,7 +192,7 @@ def train():
                 learn_rate = agent.learn_rate,
                 epsilon = agent.epsilon)
             """
-            print(f'Episode: {episode}, Median reward: {med_reward}, Win rate : {win_rate}')
+            print(f'Episode: {episode}, Median reward: {med_reward}, MEEEAN : {np.mean(ep_rewards[-AGG_STATS_EVERY:])}, Win rate : {win_rate}')
 
         if not episode % SAVE_MODEL_EVERY:
             with open(f'models/model_{episode}.pkl', 'wb') as output:

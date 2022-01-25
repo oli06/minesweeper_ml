@@ -1,4 +1,5 @@
 from collections import deque
+from pickle import load
 import random
 from turtle import update
 import torch
@@ -8,10 +9,11 @@ import torch.nn.functional as F
 import numpy as np
 import os
 import tensorflow as tf
+from tensorflow import keras
 
 from dqn import create_dqn
 
-BATCH_SIZE = 1_000
+BATCH_SIZE = 64
 MIN_TRAIN_SIZE = 1_000
 
 LEARNING_RATE = 0.01
@@ -49,12 +51,18 @@ class Linear_QNet(nn.Module):
 
 
 class QTrainer:
-    def __init__(self, lr, gamma, epsilon, MAX_MEMORY_SIZE):
+    def __init__(self, lr, gamma, epsilon, MAX_MEMORY_SIZE, load_model=False):
         self.gamma = gamma
         self.learning_rate = lr
-        self.memory = deque(maxlen=MAX_MEMORY_SIZE)
-        self.model = create_dqn(LEARNING_RATE, (GAME_SIZE,GAME_SIZE,2), GAME_SIZE*GAME_SIZE, CONV_UNITS, DENSE_UNITS)
-        self.next_state_model = create_dqn(LEARNING_RATE, (GAME_SIZE,GAME_SIZE,2), GAME_SIZE*GAME_SIZE, CONV_UNITS, DENSE_UNITS)
+        if load_model:
+            self.model = keras.models.load_model('models/model_4000.h5')
+            self.next_state_model = self.model
+            with open("models/model_4000.pkl", "rb") as f:
+                self.memory = load(f)
+        else:
+            self.memory = deque(maxlen=MAX_MEMORY_SIZE)
+            self.model = create_dqn(LEARNING_RATE, (GAME_SIZE,GAME_SIZE,2), GAME_SIZE*GAME_SIZE, CONV_UNITS, DENSE_UNITS)
+            self.next_state_model = create_dqn(LEARNING_RATE, (GAME_SIZE,GAME_SIZE,2), GAME_SIZE*GAME_SIZE, CONV_UNITS, DENSE_UNITS)
         self.next_state_model_counter = 0
         #self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
