@@ -22,20 +22,21 @@ class Agent:
         self.trainer = QTrainer(LEARNING_RATE, self.gamma, self.epsilon, MAX_MEMORY, model_path=model_path)
 
 
-    def getAction(self, state, game_size):
+    def getAction(self, state, game_size, game: ms.Minesweeper):
         if random.random() < self.trainer.epsilon:
             while True:
+                #regenerate field if already unfolded
                 i = random.randint(0, game_size-1)
                 j = random.randint(0, game_size-1)
-                if state[i,j, 1]: #regenerate field if already unfolded
+                if not game.field[i,j]: 
                     move = (i,j)
                     return move, True
 
         prediction = self.trainer.model.predict(np.reshape(state, (1, game_size, game_size, 2))) #since our model always uses a input of (None, game_size, game_size, 2) where None is a variable batch size (in this prediction case it must be 1), we need to add another dimension, such that (1,9,9,2)
         #therefore prediction is an array (of batch_size), since our batch_size = 1, we need the first prediction
-        board = state[:,:,1] #board: unfolded/folded states in (1,game_size*game_size) shape
-        prediction[board==0] = np.min(prediction) #set all unfoleded to min-prediction to prevent no_progress
-        move = np.argmax(prediction)
+
+        prediction[np.reshape(game.field, (1,GAME_SIZE*GAME_SIZE)) == False] = np.min(prediction)
+        move = np.unravel_index(np.argmax(prediction), game.field.shape)
         return move, False
 
     def _getActions(self, game_instance: ms.Minesweeper):
@@ -99,7 +100,7 @@ def train():
         done = False
         while not done:
             state = agent.getState(game)
-            move, is_random_move = agent.getAction(state, GAME_SIZE) #the next move aka field to click on
+            move, is_random_move = agent.getAction(state, GAME_SIZE, game) #the next move aka field to click on
             random_counter += is_random_move
 
             old_score = game.unfolded
