@@ -15,15 +15,15 @@ GAME_SIZE = 9
 MINE_COUNT = 10
 
 class Agent:
-    def __init__(self, load_model=False):
+    def __init__(self, model_path=""):
         self.gamma = 0.1
         self.epsilon = 1
         self.number_of_games = 0
-        self.trainer = QTrainer(LEARNING_RATE, self.gamma, self.epsilon, MAX_MEMORY, load_model)
+        self.trainer = QTrainer(LEARNING_RATE, self.gamma, self.epsilon, MAX_MEMORY, model_path=model_path)
 
 
     def getAction(self, state, game_size):
-        if random.random() < self.epsilon:
+        if random.random() < self.trainer.epsilon:
             while True:
                 i = random.randint(0, game_size-1)
                 j = random.randint(0, game_size-1)
@@ -85,8 +85,8 @@ def train():
     win_rate = 0
     plot_scores = []
     plot_mean_scores = []
-    agent = Agent(load_model=True)
-
+    #agent = Agent(model_path="models/model_4000")
+    agent = Agent()
     game = ms.Minesweeper(GAME_SIZE, MINE_COUNT)
     progress_list, wins_list, ep_rewards = [], [], []
     random_counter = 0

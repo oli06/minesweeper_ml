@@ -20,17 +20,17 @@ CONV_UNITS = 64 # number of neurons in each conv layer
 DENSE_UNITS = 512 # number of neurons in fully connected dense layer
 
 class QTrainer:
-    def __init__(self, lr, gamma, epsilon, MAX_MEMORY_SIZE, load_model=False):
+    def __init__(self, lr, gamma, epsilon, MAX_MEMORY_SIZE, model_path=""):
         self.gamma = gamma
         self.learning_rate = lr
         self.next_state_model_counter = 0
         self.criterion = nn.MSELoss()
         self.epsilon = epsilon
 
-        if load_model:
-            self.model = keras.models.load_model('models/model_4000.h5')
+        if not model_path == "":
+            self.model = keras.models.load_model(f"{model_path}.h5")
             self.next_state_model = self.model
-            with open("models/model_4000.pkl", "rb") as f:
+            with open(f"{model_path}.pkl", "rb") as f:
                 self.memory = load(f)
         else:
             self.memory = deque(maxlen=MAX_MEMORY_SIZE)
