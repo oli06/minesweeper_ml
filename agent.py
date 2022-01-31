@@ -152,7 +152,7 @@ def train():
             print(f'Episode: {episode}, Median reward: {med_reward}, MEEEAN : {np.mean(ep_rewards[-AGG_STATS_EVERY:])}, Win rate : {win_rate}')
 
         if not episode % SAVE_MODEL_EVERY:
-            with open(f'models/model_{episode}.pkl', 'wb') as output:
+            with open(f'models/model_{episode}.pkl', 'w+b') as output:
                 pickle.dump(agent.trainer.memory, output)
 
             agent.trainer.model.save(f'models/model_{episode}.h5')
