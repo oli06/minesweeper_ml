@@ -43,18 +43,18 @@ class Minesweeper:
         assert i < self.game_size and j < self.game_size
 
         if self.field[i][j]:
-            return False #field already unfolded
+            return True #field already unfolded
 
         if self.field_assignment[i][j] == math.inf:
             if not self.field.any(): #first click
                 #if the first click lands on a bomb, we simply regenerate the game as long as we dont generate a mine on i,j
                 self.__generate_game()
-                while self.unfold(i,j):
+                while not self.unfold(i,j):
                     self.__generate_game()
 
-                return False
+                return True
             else:
-                return True #you lost the game / selected a mine
+                return False #you lost the game / selected a mine
 
 
         self.field[i][j] = 1
@@ -64,6 +64,7 @@ class Minesweeper:
 
         self.unfolded += 1
         #print(f"unfolded {i},{j} ist {self.field_assignment[i,j]}")
+        return True
 
         if np.sum(self.field == False) == self.mines:
             #game is won
