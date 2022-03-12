@@ -2,6 +2,7 @@
 import pickle
 
 from tqdm import tqdm
+from bruteforce import BruteforceMinesweeperObject
 import minesweeper as ms
 import numpy as np
 import random
@@ -22,8 +23,12 @@ class Agent:
         self.trainer = QTrainer(LEARNING_RATE, self.gamma, self.epsilon, MAX_MEMORY, model_path=model_path)
 
 
-    def getAction(self, state, game_size, game: ms.Minesweeper):
+    def getAction(self, state, game_size, game: ms.Minesweeper, bruteforceInstance: BruteforceMinesweeperObject):
         if random.random() < self.trainer.epsilon:
+            bruteforce_move = bruteforceInstance.bruteforce_prediction(game.field, game.field_assignment)
+            if bruteforce_move:
+                return bruteforce_move, False
+
             while True:
                 #regenerate field if already unfolded
                 i = random.randint(0, game_size-1)
@@ -94,13 +99,14 @@ def train():
     episodes = 100_000
     for episode in tqdm(range(1, episodes+1), unit='episode'):
         game = ms.Minesweeper(GAME_SIZE, MINE_COUNT)
+        bruteforceGameInstance = BruteforceMinesweeperObject(GAME_SIZE, GAME_SIZE)
         agent.number_of_games += 1
         past_n_wins = win_rate
         episode_reward = 0
         done = False
         while not done:
             state = agent.getState(game)
-            move, is_random_move = agent.getAction(state, GAME_SIZE, game) #the next move aka field to click on
+            move, is_random_move = agent.getAction(state, GAME_SIZE, game, bruteforceGameInstance) #the next move aka field to click on
             random_counter += is_random_move
 
             old_score = game.unfolded
@@ -120,7 +126,6 @@ def train():
 
         if game.is_game_won():
             win_rate += 1
-            print(f"+++++++++ WIR HABEN GEWONNEN🔫🔫🔫 +++++++")
 
         if agent.number_of_games % 100 == 0:
             total_score += hundred_games_score
@@ -142,14 +147,7 @@ def train():
             win_rate = round(np.sum(wins_list[-AGG_STATS_EVERY:]) / AGG_STATS_EVERY, 2)
             med_reward = round(np.median(ep_rewards[-AGG_STATS_EVERY:]), 2)
 
-            """agent.tensorboard.update_stats(
-                progress_med = med_progress,
-                winrate = win_rate,
-                reward_med = med_reward,
-                learn_rate = agent.learn_rate,
-                epsilon = agent.epsilon)
-            """
-            print(f'Episode: {episode}, Median reward: {med_reward}, MEEEAN : {np.mean(ep_rewards[-AGG_STATS_EVERY:])}, Win rate : {win_rate}')
+            print(f'Episode: {episode}, Median reward: {med_reward}, Mean reward : {np.mean(ep_rewards[-AGG_STATS_EVERY:])}, Win rate : {win_rate}')
 
         if not episode % SAVE_MODEL_EVERY:
             with open(f'models/model_{episode}.pkl', 'w+b') as output:
