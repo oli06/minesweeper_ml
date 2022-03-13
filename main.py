@@ -6,9 +6,6 @@ import numpy as np
 import math
 import minesweeper as ms
 
-number_of_mines = 10
-number_of_rows = 9
-#size_of_board = 603
 board_size_x = 603
 board_size_y = 603
 header_offset = 50
