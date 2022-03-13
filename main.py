@@ -65,7 +65,7 @@ class MinesweeperUI():
     def drawScore(self):
         self.canvas.delete("score")
         text = f"Score: {self.game.unfolded}"
-        self.canvas.create_text(8 * board_size_x / self.number_of_rows, board_size_x + (header_offset-4) / 2, font="cmr 15 bold", tags="score", fill="black", text=text)
+        self.canvas.create_text(550, board_size_x + (header_offset-4) / 2, font="cmr 15 bold", tags="score", fill="black", text=text)
 
     def resetGame(self, event):
         self.canvas.delete("all")
