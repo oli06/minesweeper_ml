@@ -15,7 +15,7 @@ UPDATE_NEXT_STATE_MODEL_AT = 5
 GAME_SIZE = 9
 EPSILON_DECREASE = 0.99975
 LEARNING_RATE_DECREASE = 0.99975
-EPSILON_MIN = 0.01
+EPSILON_MIN = 0.35
 CONV_UNITS = 64 # number of neurons in each conv layer
 DENSE_UNITS = 512 # number of neurons in fully connected dense layer
 

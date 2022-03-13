@@ -38,9 +38,8 @@ class Agent:
                     return move, True
 
         prediction = self.trainer.model.predict(np.reshape(state, (1, game_size, game_size, 2))) #since our model always uses a input of (None, game_size, game_size, 2) where None is a variable batch size (in this prediction case it must be 1), we need to add another dimension, such that (1,9,9,2)
-        #therefore prediction is an array (of batch_size), since our batch_size = 1, we need the first prediction
-
-        prediction[np.reshape(game.field, (1,GAME_SIZE*GAME_SIZE)) == False] = np.min(prediction)
+            #therefore prediction is an array (of batch_size), since our batch_size = 1, we need the first prediction
+        prediction[np.reshape(game.field, (1,GAME_SIZE*GAME_SIZE)) == True] = np.min(prediction)
         move = np.unravel_index(np.argmax(prediction), game.field.shape)
         return move, False
 
@@ -72,10 +71,10 @@ def has_neighbour(move, game):
         return True
     return False
 
-def calculate_reward(game:ms.Minesweeper, done, field_already_unfolded, old_score, has_neighbors):
+def calculate_reward(game:ms.Minesweeper, done, field_already_unfolded, old_score, has_neighbors, already_unfolded_multiplier):
     reward = .3
     if field_already_unfolded:
-        reward = -0.3
+        reward = -0.3 * already_unfolded_multiplier
     elif done:
         reward = 1 if game.is_game_won() else -1
     elif old_score > 0 and not has_neighbors:
@@ -89,6 +88,7 @@ def train():
     total_score = 0
     hundred_games_score = 0
     win_rate = 0
+    total_wins = 0
     plot_scores = []
     plot_mean_scores = []
     #agent = Agent(model_path="models/model_4000")
@@ -103,6 +103,7 @@ def train():
         agent.number_of_games += 1
         past_n_wins = win_rate
         episode_reward = 0
+        unfolded_multiplier = 1
         done = False
         while not done:
             state = agent.getState(game)
@@ -111,13 +112,14 @@ def train():
 
             old_score = game.unfolded
             field_already_unfolded = game.field[move[0], move[1]]
+            unfolded_multiplier = unfolded_multiplier * (1 + field_already_unfolded)
             has_unfolded_neighbours = has_neighbour(move, game)
             done = game.unfold(move[0], move[1])
             score = game.unfolded
-            reward = calculate_reward(game, done, field_already_unfolded, old_score, has_unfolded_neighbours)
+            reward = calculate_reward(game, done, field_already_unfolded, old_score, has_unfolded_neighbours, unfolded_multiplier)
             episode_reward += reward
 
-            state_new = agent.getState(game)
+            state_new = agent.getState(game) 
             agent.remember(state, state_new, move, reward, done)
             agent.train_short_memory(done)
         high_score = max(high_score, score)
@@ -126,10 +128,11 @@ def train():
 
         if game.is_game_won():
             win_rate += 1
+            total_wins += 1
 
         if agent.number_of_games % 100 == 0:
             total_score += hundred_games_score
-            print("Games", agent.number_of_games, "last_hundred_games_score", hundred_games_score / 100, "highscore", high_score, "average score", total_score / agent.number_of_games, "avg random move", random_counter / 100, "win-rate", win_rate/100)
+            print("overall highscore", high_score, "avg. score", total_score / agent.number_of_games)
             hundred_games_score = 0
             random_counter = 0
             win_rate = 0
@@ -147,7 +150,7 @@ def train():
             win_rate = round(np.sum(wins_list[-AGG_STATS_EVERY:]) / AGG_STATS_EVERY, 2)
             med_reward = round(np.median(ep_rewards[-AGG_STATS_EVERY:]), 2)
 
-            print(f'Episode: {episode}, Median reward: {med_reward}, Mean reward : {np.mean(ep_rewards[-AGG_STATS_EVERY:])}, Win rate : {win_rate}')
+            print(f'Episode: {episode}, Median reward: {med_reward}, Mean reward : {np.mean(ep_rewards[-AGG_STATS_EVERY:])}, Win rate : {win_rate}, total won games: {total_wins}')
 
         if not episode % SAVE_MODEL_EVERY:
             with open(f'models/model_{episode}.pkl', 'w+b') as output:
