@@ -1,19 +1,21 @@
 #main and gui for our minesweeper game
 
 from email import header
+from email.quoprimime import header_check
 from tkinter import *
+from turtle import right
 import numpy as np
 import math
 import minesweeper as ms
 
-board_size_x = 603
-board_size_y = 603
+board_size_x = 600
 header_offset = 50
 class MinesweeperUI():
     def __init__(self):
         self.window = Tk()
+        self.window.resizable(False, False)
         self.window.title('Minesweeper')
-        self.canvas = Canvas(self.window, width=board_size_x, height=board_size_y + header_offset)
+        self.canvas = Canvas(self.window, width=board_size_x, height=board_size_x + header_offset)
         self.canvas.pack()
         # Input from user in form of clicks
         self.window.bind('<Button-1>', self.click)
@@ -33,37 +35,37 @@ class MinesweeperUI():
         self.markers = np.zeros((number_of_rows, number_of_rows), dtype=np.bool_) #We need a field to hold track of markers
 
     def initalize_resizing_fields(self):
-        self.game_size_entry = Entry(self.window) 
-        self.canvas.create_window(6 * board_size_x / self.number_of_rows, 2+ board_size_y + (header_offset) / 4, window=self.game_size_entry)
-        self.canvas.create_text((3.7 * board_size_x / self.number_of_rows ), 2+ board_size_y + (header_offset) / 4, text="Spielgroeße", font="cmr 14")
+        self.game_size_entry = Entry(None) 
+        self.canvas.create_window(400, 2 + board_size_x + (header_offset) / 4, window=self.game_size_entry)
+        self.canvas.create_text(250, 2+ board_size_x + (header_offset) / 4, text="Spielgroeße", font="cmr 14")
 
         game_size_text = f"{self.number_of_rows}"
         self.game_size_entry.insert(0, game_size_text)
 
         self.game_mines_entry = Entry(self.window)
-        self.canvas.create_window(6 * board_size_x / self.number_of_rows, 2+ board_size_y + 3 * (header_offset) / 4, window=self.game_mines_entry)
-        self.canvas.create_text((3.7 * board_size_x / self.number_of_rows ),2+ board_size_y + 3 * (header_offset) / 4, text="#Mines:", font="cmr 14")
+        self.canvas.create_window(400, 2+ board_size_x + 3 * (header_offset) / 4, window=self.game_mines_entry)
+        self.canvas.create_text(250,2+ board_size_x + 3 * (header_offset) / 4, text="#Mines:", font="cmr 14",justify="right")
         mines_text = f"{self.number_of_mines}"
         self.game_mines_entry.insert(0, mines_text)
 
     def initialize_board(self):
         for i in range(self.number_of_rows+1): #columns
-            self.canvas.create_line((i) * board_size_x / self.number_of_rows, 0, (i) * board_size_x / self.number_of_rows, board_size_y)
+            self.canvas.create_line((i) * board_size_x / self.number_of_rows, 0, (i) * board_size_x / self.number_of_rows, board_size_x)
 
         for i in range(self.number_of_rows+1): #rows
-            self.canvas.create_line(0, (i) * board_size_y / self.number_of_rows, board_size_x, (i) * board_size_y / self.number_of_rows)
+            self.canvas.create_line(0, (i) * board_size_x / self.number_of_rows, board_size_x, (i) * board_size_x / self.number_of_rows)
 
-        resetButton = self.canvas.create_rectangle(0, 2+ board_size_y, 3 * board_size_x / self.number_of_rows, board_size_y + header_offset - 4, fill="grey100", outline="grey60")
-        resetButtonLabel = self.canvas.create_text((3 * board_size_x / self.number_of_rows ) / 2, 2+ board_size_y + (header_offset-4) / 2, text="Neues Spiel", font="cmr 25 bold")
+        resetButton = self.canvas.create_rectangle(0, 2 + board_size_x, 200, board_size_x + header_offset - 4, fill="grey100", outline="grey60")
+        resetButtonLabel = self.canvas.create_text(75, 2+ board_size_x + (header_offset-4) / 2, text="Neues Spiel", font="cmr 25 bold")
         self.canvas.tag_bind(resetButton, "<Button-1>", self.resetGame)
         self.canvas.tag_bind(resetButtonLabel, "<Button-1>", self.resetGame)
-
+        
         self.drawScore()
 
     def drawScore(self):
         self.canvas.delete("score")
         text = f"Score: {self.game.unfolded}"
-        self.canvas.create_text(8 * board_size_x / self.number_of_rows, board_size_y + (header_offset-4) / 2, font="cmr 15 bold", tags="score", fill="black", text=text)
+        self.canvas.create_text(8 * board_size_x / self.number_of_rows, board_size_x + (header_offset-4) / 2, font="cmr 15 bold", tags="score", fill="black", text=text)
 
     def resetGame(self, event):
         self.canvas.delete("all")
@@ -103,13 +105,13 @@ class MinesweeperUI():
         elif number == 7:
             pass
 
-        self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, header_offset + y + (board_size_y / self.number_of_rows) / 2, font="cmr 40 bold", fill=color, text=str(int(number)))
+        self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, y + (board_size_x / self.number_of_rows) / 2, font="cmr 40 bold", fill=color, text=str(int(number)))
 
 
     def draw_marker(self, i,j):
         y,x = self.convert_logical_to_grid_position(i,j)
 
-        self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, header_offset + y + (board_size_y / self.number_of_rows) / 2, font="cmr 40 bold", fill="red", text=str("x"), tags=f"marker_{i}_{j}")
+        self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, y + (board_size_x / self.number_of_rows) / 2, font="cmr 40 bold", fill="red", text=str("x"), tags=f"marker_{i}_{j}")
 
 
     def remove_marker(self, i, j):
@@ -120,20 +122,23 @@ class MinesweeperUI():
         for ix, iy in np.ndindex(self.game.field_assignment.shape):
             if self.game.field_assignment[ix,iy] == math.inf:
                 y,x = self.convert_logical_to_grid_position(ix,iy)
-                self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, header_offset + y + (board_size_y / self.number_of_rows) / 2, font="cmr 40 bold", fill="black", text=str("B"))
+                self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, y + (board_size_x / self.number_of_rows) / 2, font="cmr 40 bold", fill="black", text=str("B"))
 
 
     def convert_grid_to_logical_position(self, grid_position):
-        return math.floor(grid_position[0] / board_size_x * self.number_of_rows), math.floor(grid_position[1] / board_size_y * self.number_of_rows)
+        return math.floor(grid_position[0] / board_size_x * self.number_of_rows), math.floor(grid_position[1] / board_size_x * self.number_of_rows)
 
 
     def convert_logical_to_grid_position(self, i,j):
-        return (board_size_y / self.number_of_rows) * i, (board_size_x / self.number_of_rows) * j
+        return (board_size_x / self.number_of_rows) * i, (board_size_x / self.number_of_rows) * j
 
 
     def click(self, event):
         grid_position = [event.x, event.y]
-        if event.x < 0 or event.y < header_offset:
+        print(event)
+        print(event.widget)
+        print(grid_position)
+        if event.x < 0 or event.y < 0 or event.y > board_size_x:
             #clicked out of bounds / moved the window / reseted the game
             return
 
