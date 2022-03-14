@@ -131,6 +131,8 @@ def train():
             total_wins += 1
 
         if agent.number_of_games % 100 == 0:
+            #with open("epsilon60.txt", "a") as out:
+                #out.write(f"{win_rate},{hundred_games_score / 100},{round(np.median(ep_rewards[-AGG_STATS_EVERY:]), 2)}\n")
             total_score += hundred_games_score
             print("overall highscore", high_score, "avg. score", total_score / agent.number_of_games)
             hundred_games_score = 0

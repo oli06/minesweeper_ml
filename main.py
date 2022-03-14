@@ -1,9 +1,6 @@
 #main and gui for our minesweeper game
 
-from email import header
-from email.quoprimime import header_check
 from tkinter import *
-from turtle import right
 import numpy as np
 import math
 import minesweeper as ms
@@ -111,7 +108,7 @@ class MinesweeperUI():
     def draw_marker(self, i,j):
         y,x = self.convert_logical_to_grid_position(i,j)
 
-        self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, y + (board_size_x / self.number_of_rows) / 2, font="cmr 40 bold", fill="red", text=str("x"), tags=f"marker_{i}_{j}")
+        self.canvas.create_text(x + (board_size_x / self.number_of_rows) / 2, y + (board_size_x / self.number_of_rows) / 2, font="cmr 40 bold", fill="grey40", text=str("x"), tags=f"marker_{i}_{j}")
 
 
     def remove_marker(self, i, j):
@@ -147,14 +144,16 @@ class MinesweeperUI():
         if not self.game.unfold(i,j):
             #redraw ui
             new_fields = np.logical_xor(old_field, self.game.field)
-            print(new_fields)
             self.draw_active_fields(new_fields)
             self.drawScore()
         else:
             #game is lost or won
             if not self.game.is_game_won():
                 self.draw_mines()
-
+            else: 
+                new_fields = np.logical_xor(old_field, self.game.field)
+                self.draw_active_fields(new_fields)
+                self.drawScore()
 
     def right_click(self, event):
         grid_position = [event.x, event.y]
