@@ -12,4 +12,5 @@ Minesweeper implementation with a ml algorithm
 | bruteforce.py | Implements a Minesweeper Bruteforce Algorithm |
 | dqn.py | holds the DQN model used by the agent |
 | model.py | QTrainer class which trains the DQN model and updates the Q Parameter | 
+| utils.py | utility functionality |
 | __bruteforce_test.py | internal test cases for the bruteforce algorithm |
