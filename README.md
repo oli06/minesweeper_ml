@@ -3,10 +3,10 @@ Minesweeper implementation with a ml algorithm
 
 ## Files
 
-| Filename |      Content      |
+| Filename | Content |
 |----------|:-------------:|
 | gui.py |  Playable Minesweeper GUI program |
-| training.py | Train a DQN on 100.000 minesweeper game instances| 
+| training.py | Trains a DQN on 100.000 minesweeper games | 
 | minesweeper.py | Minesweeper logic |
 | agent.py | Implements the reinforcement learning agent which is used during training |
 | bruteforce.py | Implements a Minesweeper Bruteforce Algorithm |
