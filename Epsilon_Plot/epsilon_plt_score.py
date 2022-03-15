@@ -6,7 +6,7 @@ with open('epsilon90.txt') as f:
     x1 = [i * 100 for i in range(len(lines[:101]))]
     y1 = [float(line.split(',')[1]) for line in lines[:101]]
 
-with open('epsilon60.txt') as g:
+with open('epsilon65.txt') as g:
     lines = g.readlines()
     x2 = [i * 100 for i in range(len(lines[:101]))]
     y2 = [float(line.split(',')[1]) for line in lines[:101]]
