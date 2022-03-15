@@ -34,3 +34,14 @@ def pretty_print(self, field, field_assignment):
             else: 
                 print_str += " U " if not field[i,j] else " " + str(int(field_assignment[i,j])) + " "
         print(print_str)
+
+def has_neighbour(move, game):
+    #calculating neigbor indices
+    left = max(0, move[0]-1)
+    right = max(0, move[0]+2)
+    bottom = max(0, move[1]-1)
+    top = max(0, move[1]+2)
+
+    if game.field[left:right,bottom:top].any():
+        return True
+    return False
