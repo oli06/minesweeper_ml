@@ -1,10 +1,21 @@
 # minesweeper_ml
-Minesweeper implementation with a ml algorithm
+Minesweeper implementation with a Reinforcement Learning Agent
+
+## Where to start?
+You want to play Minesweeper? 
+Run
+```python
+python gui.py
+```
+or train a model using
+```python
+python training.py
+```
 
 ## Files
 
 | Filename | Content |
-|----------|:-------------:|
+|----------|:-------------|
 | gui.py |  Playable Minesweeper GUI program |
 | training.py | Trains a DQN on 100.000 minesweeper games | 
 | minesweeper.py | Minesweeper logic |
