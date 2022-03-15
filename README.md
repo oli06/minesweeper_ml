@@ -12,6 +12,8 @@ or train a model using
 python training.py
 ```
 
+If you want to play with an existing model, specify the model_path as a parameter of the agent and disable QTrainer.train_step.
+
 ## Files
 
 | Filename | Content |
