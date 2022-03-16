@@ -28,24 +28,17 @@ class BruteforceMinesweeperObject:
 
         return None
 
-    def __safe_spaces_of_danger_zones(self):
-        for dgz in self.danger_zone:
-            for dgz2 in self.danger_zone:
-                if dgz != dgz2:
-                    if len(dgz) < len(dgz2):
-                        #nur wenn erste Liste echt kleiner ist kann sie vollstaendig in der anderen liste enthalten sein und es gibt ein safe_field
-                        not_contained = False
-                        for item in dgz:
-                            if not item in dgz2:
-                                not_contained = True
-                                break
-                        if not not_contained:
-                            #alle felder, die nur in dgz2 sind, nicht aber in dgz sind safe_fields
-                            for item in dgz2:
-                                if not item in dgz:
-                                    self.safe_for_sure.append(item)
-
     def __unfoldNeighboursOfZero(self, field: np.ndarray, field_assignment: np.ndarray):
+        '''
+        Iterates over field_assignment and adds every field to self.save_for_sure if it has a zero-neighbour.
+        
+                Parameters:
+                        field (array): the field array
+                        field_assignment (array): the field_assignment array
+
+                Returns:
+                        void
+        '''
         for i in range(0,self.game_size_x):
             for j in range(0, self.game_size_y):
                 left = max(0, j-1)
@@ -64,6 +57,16 @@ class BruteforceMinesweeperObject:
                                     self.safe_for_sure.append((p,o))
 
     def __mines_for_sure_if_folded_equals_number(self, field: np.ndarray, field_assignment: np.ndarray):
+        '''
+        Iterates over field_assignment and adds every field to self.mines_for_sure if for a neighbours-value is equal to folded neighbours.
+        
+                Parameters:
+                        field (array): the field array
+                        field_assignment (array): the field_assignment array
+
+                Returns:
+                        void
+        '''
         for i in range(0,self.game_size_x):
             for j in range(0, self.game_size_y):
                 left = max(0, j-1)
@@ -148,6 +151,17 @@ class BruteforceMinesweeperObject:
         return move
 
     def __get_field_danger_zones(self, left, right, top, bottom):
+        '''
+        For a given 2D-range of fields all danger zones inside the range are returned
+                Parameters:
+                        left (int): left
+                        right (int): right
+                        top (int): top
+                        bottom (int): bottom
+
+                Returns:
+                        Array of danger zones for the 2D-range
+        '''
         field_danger_zones = []
         for dgz in self.danger_zone:
             is_contained = True
@@ -162,6 +176,19 @@ class BruteforceMinesweeperObject:
         return field_danger_zones
 
     def __danger_zone_generator(self, i,j, field, field_assignment):
+        '''
+        Generates all danger zones for a given field (i,j) and stores them in self.danger_zone. 
+        If self.danger_zone already contains a generated danger_zone, these are merged.
+
+                Parameters:
+                        i (int): y-coordinate of the field
+                        j (int): x-coordinate of the field
+                        field (array): the field array
+                        field_assignment (array): the field_assignment array
+
+                Returns:
+                        void
+        '''
         left = max(0, j-1)
         right = min(j + 1, self.game_size_x-1)
         top = max(0, i-1)
