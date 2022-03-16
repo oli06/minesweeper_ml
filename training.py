@@ -14,12 +14,15 @@ AGG_STATS_EVERY = 100 # calculate stats every 100 games for tensorboard
 SAVE_MODEL_EVERY = 1000 # save model and replay every 10,000 episodes
 EPISODES = 100_000
 
-MAX_MEMORY = 25_000
+MAX_MEMORY = 25_000 #number of state instances to store in memory
 LEARNING_RATE = 0.001
-EPSILON=1
-GAMMA=0.1
+EPSILON=1 #radomization
+GAMMA=0.1 #q calculation
 
 def train():
+    '''
+    Trains a DQN using the Agent (agent.py) and its reward function. 
+    '''
     high_score = 0
     total_score = 0
     hundred_games_score = 0

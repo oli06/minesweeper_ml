@@ -13,8 +13,10 @@ class Minesweeper:
 
 
     def __generate_game(self):
-        #init game data
-
+        '''
+        Instantiates a new minesweeper game with size self.game_size and #mines of self.mines.
+        Initializing self.fields and self.field_assignment.
+        '''
         #generate mines locations and update neighbors
         field_assignment = np.zeros((self.game_size, self.game_size), dtype=np.float)
         mines_count = 0
@@ -40,6 +42,19 @@ class Minesweeper:
         #print(field_assignment)
 
     def unfold(self, i, j):
+        '''
+        For given coordinates (i,j), the field is unfolded. 
+        If the field value == 0, all neighbours are unfolded as well.
+        If the field value == math.inf and it is the first move, the game is reinitalized.
+        If it is not the first move, the game is lost.
+
+                Parameters:
+                        i (int): y-coordinate of the field to unfold
+                        j (int): x-coordinate of the field to unfold
+
+                Returns:
+                        True, if the game is won OR lost, False otherwise
+        '''
         assert i < self.game_size and j < self.game_size
 
         if self.field[i][j]:
@@ -72,9 +87,22 @@ class Minesweeper:
         return False
 
     def is_game_won(self):
+        '''
+        Returns True, if the game is won, False otherwise
+        '''
         return np.sum(self.field == False) == self.mines
 
     def unfold_neighbors(self, i, j):
+        '''
+        For given coordinates (i,j), all its neighbours are unfolded.
+
+                Parameters:
+                        i (int): y-coordinate of the field
+                        j (int): x-coordinate of the field
+
+                Returns:
+                        void
+        '''
         #unfold all neigbors that are zeros and habe a number
 
         left = max(0, j-1)
